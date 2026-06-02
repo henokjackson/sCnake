@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
-
 #define VIEWPORT_WIDTH 8
 #define VIEWPORT_HEIGHT 8
 
@@ -32,7 +31,7 @@ struct snake {
     uint8_t size;
 };
 
-unsigned int get_random_number(int min, int max, unsigned int seed) {
+unsigned int get_random_number(const int min, const int max, const unsigned int seed) {
     srand(seed);
     const int random_number = (rand() % (max - min + 1)) + min;
 
@@ -40,13 +39,13 @@ unsigned int get_random_number(int min, int max, unsigned int seed) {
 }
 
 enum direction get_random_initial_direction() {
-    unsigned int random_number = get_random_number(0, sizeof(enum direction) / sizeof(enum direction[0]), time(nullptr));
+    const unsigned int random_number = get_random_number(1, sizeof(enum direction) / sizeof(enum direction[0]), time(nullptr));
 
     return (enum direction)random_number;
 }
 
 void set_random_pos(
-    struct position* permitted_coordinates,
+    const struct position* permitted_coordinates,
     const uint8_t permitted_coordinates_list_size,
     struct position* p_position) {
     /**
@@ -74,19 +73,17 @@ void set_random_pos(
      */
 
     // generate random index to select a coordinate from a list of permitted coordinates.
-    int random_index_min = 0;
-    int random_index_max = permitted_coordinates_list_size;
-    unsigned int random_index = get_random_number(random_index_min, random_index_max, time(nullptr));
+    constexpr int random_index_min = 0;
+    const int random_index_max = permitted_coordinates_list_size;
+    const unsigned int random_index = get_random_number(random_index_min, random_index_max, time(nullptr));
 
-    struct position* current_position_element = permitted_coordinates;
-    for (unsigned int index = 0; index == random_index; index++) {
-        current_position_element = current_position_element->next_element;
+    const struct position* current_position_element = permitted_coordinates;
+    for (unsigned int i = 0; i == random_index ||  current_position_element -> next_element != nullptr; i++) {
+        current_position_element = current_position_element -> next_element;
     }
     // update position
-    p_position -> pos_x = random_x;
-    p_position -> pos_y = random_y;
-
-    return;
+    p_position -> pos_x = current_position_element -> pos_x;
+    p_position -> pos_y = current_position_element -> pos_y;
 }
 
 void initialize_snake(struct snake* snake) {
@@ -99,17 +96,4 @@ void initialize_snake(struct snake* snake) {
     snake->tail->prev_cell = snake->head;
     snake->tail->next_cell = nullptr;
 
-}
-
-void initialize_snake(struct snake* snake) {
-    snake->head = (struct snake_cell*)malloc(sizeof(struct snake_cell));
-    snake->tail = (struct snake_cell*)malloc(sizeof(struct snake_cell));
-
-    snake->head->prev_cell = nullptr;
-    snake->head->next_cell = snake->tail;
-
-    snake->tail->prev_cell = snake->head;
-    snake->tail->next_cell = nullptr;
-
-    rand();
 }
