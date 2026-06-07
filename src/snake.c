@@ -1,101 +1,83 @@
-#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
-#define VIEWPORT_WIDTH 8
-#define VIEWPORT_HEIGHT 8
+#include "common.h"
+#include "snake.h"
 
-enum direction {
-    NONE,
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT
-};
-
-struct position {
-    uint8_t pos_x;
-    uint8_t pos_y;
-    struct position* next_element;
-};
-
-struct snake_cell {
-    struct snake_cell* prev_cell;
-    struct snake_cell* next_cell;
-    struct position pos;
-};
-
-struct snake {
-    struct snake_cell* head;
-    struct snake_cell* tail;
-    enum direction direction;
-    uint8_t size;
-};
-
-unsigned int get_random_number(const int min, const int max, const unsigned int seed) {
-    srand(seed);
-    const int random_number = (rand() % (max - min + 1)) + min;
-
-    return random_number;
-}
-
-enum direction get_random_initial_direction() {
+void set_random_direction(enum direction* direction) {
     const unsigned int random_number = get_random_number(1, sizeof(enum direction) / sizeof(enum direction[0]), time(nullptr));
-
-    return (enum direction)random_number;
+    *direction = (enum direction)random_number;
 }
 
-void set_random_pos(
-    const struct position* permitted_coordinates,
-    const uint8_t permitted_coordinates_list_size,
-    struct position* p_position) {
+struct position* generate_permitted_coordinates(const struct snake* p_snake) {
+    /**
+     * TODO: Don't forget to free this piece of shit !
+     */
+    struct position* arr_permitted_coordinated = malloc(p_snake -> size * sizeof(struct position));
+    const struct snake_cell* snake_cell_iterator = p_snake -> head;
     /**
      * INFO:
-     *      While generating random coordinates there is a thing to consider. Generating a random coordinate by excluding some is
-     *      very difficult. It involves using very clumsy logic to increment / decrement the generated random number to another one.
-     *      There are a few practical ways to tackle this but they come with their own set of challenges:
+     *  There is one thing that I missed out. Since, initial size of the snake will be 2,
+     *  the snake head can only be placed outside the border as the tail has to be fit in the same row/column.
+     *  Hence I need to write some logic to filter out the border pixels.
+     *  The main issue here is that all of these depends on the initial direction chosen.
+     *  Hence the direction needs to be decided and then the list of permitted coordinates will be generated
+     *  based on that. The issue here is that I don't want the snake head and tail to be in two different places,
+     *  which looks kinda weird. So the first thing is to bring determinsm by deciding the direction and then
+     *  deciding the position based on the excluded one.
      *
-     *  ->  The first idea is to pass in a list of excluded coordinates. When we say coordinates it is a pair.
-     *      There are multiple ways to pass in the data. Either as a 2-D boolean array of size VIEWPORT_WIDTH x VIEWPORT_HEIGHT, where
-     *      the element in the location [exclude_x][exlude_y] will be marked true, else false. But this would result in a sparse matrix,
-     *      wasting stack space. Also using an array is restrictive as the size is fixed and the snake body size might not take up the whole
-     *      array space so that gets wasted. However, this is easy to randomize as the random function just needs to pick the index of any of
-     *      those elements. But there is a catch, even if the index selection is randomized, there still is a chance that it has too keep
-     *      generating a random number until it finds the one element that is marked false. That would first require the sparse matrix to be
-     *      transformed into an array of the ones with only false elements which adds in more complexity. The only advantage here is the index.
-     *      For this case, the time complexity would involve
+     *  After careful experimentation I came up with this logic:
+     *  Left  -> Exclude all coordinates of rightmost column.
+     *  Right -> Exclude all coordinates of leftmost column.
+     *  Up    -> Exclude all coordinates of bottomest column.
+     *  Down  -> Exclude all coordinates of uppermost column.
      *
-     *  ->  Second approach is to use a linked list this would take up lesser space as the linked list will take up the length of the snake
-     *      and the food coordinates. The issue here is randomization. As the nodes of a link list are not indexed it is difficult to access
-     *      a particular element in O(1). However, using a generated random number, a for loop can be used to traverse the linked list. So the
-     *      linked list must contain only the non-excluded ones. That makes it faster and smaller.
+     *  There could be a problem whose solutions solves the other problems too.
      *
-     *  ->  Conclusion: I don't understand why I even thought about the array idea. The coordinates to be excluded are of the snake and of the food
-     *      which are already a linked list. So, I'll go witht he linked list method.
+     *  When the direction is already decided and the head is already decided, the tail can also be decided on
+     *  these two. So, the position of tail is a function of the head poistion and the initial direction.
+     *  tail position = f(head_position,direction).
+     *
+     *  The logic is pretty straightforward:
+     *
+     *  Left  -> Food Position = (x+1, y)
+     *  Right -> Food Position = (x-1, y)
+     *  Up    -> Food Position = (x, y-1)
+     *  Down  -> Food Position = (x, y+1)
      */
+    for (int i = 0; i < p_snake -> size; i++) {
+        arr_permitted_coordinated[i].x_coordinate = snake_cell_iterator -> position.x_coordinate;
+        arr_permitted_coordinated[i].y_coordinate = snake_cell_iterator -> position.y_coordinate;
+        snake_cell_iterator = snake_cell_iterator -> next;
+    }
 
-    // generate random index to select a coordinate from a list of permitted coordinates.
-    constexpr int random_index_min = 0;
-    const int random_index_max = permitted_coordinates_list_size;
-    const unsigned int random_index = get_random_number(random_index_min, random_index_max, time(nullptr));
-
-    const struct position* current_position_element = permitted_coordinates;
-    for (unsigned int i = 0;
-        i < random_index || current_position_element->next_element != nullptr;
-         i++, current_position_element = current_position_element->next_element) {};
-
-    // update position
-    p_position -> pos_x = current_position_element -> pos_x;
-    p_position -> pos_y = current_position_element -> pos_y;
+    return arr_permitted_coordinated;
 }
 
-void initialize_snake(struct snake* snake) {
-    snake -> head = (struct snake_cell*)malloc(sizeof(struct snake_cell));
-    snake -> tail = (struct snake_cell*)malloc(sizeof(struct snake_cell));
+void initialize_snake(struct snake* p_snake) {
+    // set initial size.
+    p_snake -> size = 0;
 
-    snake -> head -> prev_cell = nullptr;
-    snake -> head -> next_cell = snake -> tail;
+    // create snake head.
+    p_snake -> head = (struct snake_cell*)malloc(sizeof(struct snake_cell));
+    p_snake -> head -> prev = nullptr;
+    p_snake -> head -> next = p_snake -> tail;
+    p_snake -> size++;
 
-    snake -> tail -> prev_cell = snake -> head;
-    snake -> tail -> next_cell = nullptr;
+    // create snake tail.
+    p_snake -> tail = (struct snake_cell*)malloc(sizeof(struct snake_cell));
+    p_snake -> tail -> prev = p_snake -> head;
+    p_snake -> tail -> next = nullptr;
+    p_snake -> size++;
 
+    // generate list of permitted co-ordinates
+    struct position* arr_permitted_coordinates = generate_permitted_coordinates(p_snake);
+
+    // set random initial position for snake head.
+    set_random_position(arr_permitted_coordinates, p_snake -> size, &p_snake -> head -> position);
+
+    // set random initial direction.
+    set_random_direction(&p_snake -> direction);
+
+    // calculate initial position for tail using direction.
+    set_p_snake -> tail -> position
 }

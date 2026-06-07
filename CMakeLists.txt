@@ -8,6 +8,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/bin")
 
 file(GLOB SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.c")
 
-add_executable(sCnake ${SOURCES})
+add_executable(sCnake ${SOURCES}
+        src/common.c
+        src/common.h)
 
 target_include_directories(sCnake PUBLIC include)
