@@ -43,6 +43,34 @@ struct position* generate_permitted_coordinates(const struct snake* p_snake) {
      *  Right -> Food Position = (x-1, y)
      *  Up    -> Food Position = (x, y-1)
      *  Down  -> Food Position = (x, y+1)
+     *
+     *  There's yet one another important think that I absolutely missed !
+     *  The loop below just makes a list of coordinates of the snake body ! - why do I even need that ??!!
+     *  What I want is a list of permitted coordinates, coordinates that are not occupied by the snake body
+     *  or by the food or the ones that match the border condition depending on direction.
+     *
+     *  There are several approached poping up in my head !!
+     *
+     *  1. The first approach would be to iterate through each and every one coordinated in the plane and
+     *  for each coordinate, iterste through the snake identify the correct coordinated. But dawg !! that's
+     *  gonna have an huge time complexity, nearly O(n^2). I think there are better ways !
+     *
+     *  2. The second approach would be to use the first ever idea I had, that is to store a matrix of size
+     *  VIEWPORT_WIDTH x VIEWPORT_HEIGHT. Since arrays can be dynamically allocated, it is flexible and can be
+     *  used easioy for this purpose as the matrix will be a boolean array and the occupied coordinates will be
+     *  marked true. The only issue would be updating the matrix each time.
+     *  NOTE: The sad part here is that, there might not be a need for a linked list for representing a snake
+     *  at all. The array solution might solve the problem automatically. Sometimes even none of these might be
+     *  required, Just some clever bit shifting is all I need maybe !!
+     *
+     *  One way to tackle this is by thinking how the frames will be rendered. In order to render each frame,
+     *  I need to run a loop O(n^2) it's same as running a nxn sized array linearly..so flat / non-flat
+     *  doesn't really matter. If I'm using a linked list, for each coordinate in the array, I will have to
+     *  iterate the whole snake body. How about reversing it? How about iterating the snake and setting each
+     *  element in the array and then printing it. Okay great! so the frame render issue is solved and we need
+     *  to use the 2-D array either way.
+     *
+     *  So let's consider the array approach first !
      */
     for (int i = 0; i < p_snake -> size; i++) {
         arr_permitted_coordinated[i].x_coordinate = snake_cell_iterator -> position.x_coordinate;
