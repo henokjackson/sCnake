@@ -14,6 +14,8 @@ struct position {
     uint8_t y_coordinate;
 };
 
+bool frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH] = { false };
+
 unsigned int get_random_number(const int min, const int max, const unsigned int seed);
 
 void set_random_position(

@@ -6,6 +6,10 @@
 #include <time.h>
 #include "common.h"
 
+void initialize_frame_buffer() {
+
+}
+
 unsigned int get_random_number(const int min, const int max, const unsigned int seed) {
     srand(seed);
     const int random_number = (rand() % (max - min + 1)) + min;

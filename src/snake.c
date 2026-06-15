@@ -3,6 +3,8 @@
 #include "common.h"
 #include "snake.h"
 
+#include "food.h"
+
 void set_random_direction(enum direction* direction) {
     const unsigned int random_number = get_random_number(1, sizeof(enum direction) / sizeof(enum direction[0]), time(nullptr));
     *direction = (enum direction)random_number;
@@ -12,7 +14,14 @@ struct position* generate_permitted_coordinates(const struct snake* p_snake) {
     /**
      * TODO: Don't forget to free this piece of shit !
      */
-    struct position* arr_permitted_coordinated = malloc(p_snake -> size * sizeof(struct position));
+    struct position* arr_permitted_coordinated = malloc((VIEWPORT_HEIGHT * VIEWPORT_WIDTH - p_snake -> size - 1) * sizeof(struct snake_cell));
+
+    // Iterate the array and get a list of all the cells that are marked `false`.
+    for (int i = 0; i < VIEWPORT_HEIGHT; i++) {
+        for (int j = 0; j < VIEWPORT_WIDTH; j++) {
+
+        }
+    }
     const struct snake_cell* snake_cell_iterator = p_snake -> head;
     /**
      * INFO:
@@ -70,7 +79,9 @@ struct position* generate_permitted_coordinates(const struct snake* p_snake) {
      *  element in the array and then printing it. Okay great! so the frame render issue is solved and we need
      *  to use the 2-D array either way.
      *
-     *  So let's consider the array approach first !
+     *  From my research I found out that the best thing is either to use a static array which will be initialized
+     *  based on the viewport size based on commandline argument or terminal screen size.So let's consider
+     *  the array approach first !
      */
     for (int i = 0; i < p_snake -> size; i++) {
         arr_permitted_coordinated[i].x_coordinate = snake_cell_iterator -> position.x_coordinate;
