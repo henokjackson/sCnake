@@ -13,6 +13,7 @@ struct food {
     struct position position;
     bool is_superfood;
     uint8_t reward;
+    uint8_t size;
     time_t spawned_time;
 };
 
