@@ -2,12 +2,13 @@
 // Created by Henok Jackson on 06/06/26.
 //
 
+#include "common.h"
 #include <stdlib.h>
 #include <time.h>
-#include "common.h"
+#include <string.h>
 
 void initialize_frame_buffer() {
-
+    memset(frame_buffer, false, sizeof(frame_buffer));
 }
 
 unsigned int get_random_number(const int min, const int max, const unsigned int seed) {
