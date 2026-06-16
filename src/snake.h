@@ -5,6 +5,8 @@
 #ifndef SCNAKE_SNAKE_H
 #define SCNAKE_SNAKE_H
 
+#include "common.h"
+
 enum direction {
     NONE,
     UP,
@@ -16,14 +18,8 @@ enum direction {
 struct snake {
     uint8_t size;
     enum direction direction;
-    struct snake_cell* head;
-    struct snake_cell* tail;
-};
-
-struct snake_cell {
-    struct position position;
-    struct snake_cell* prev;
-    struct snake_cell* next;
+    struct dll_position* head;
+    struct dll_position* tail;
 };
 
 void set_random_direction(enum direction* direction);
