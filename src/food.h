@@ -9,12 +9,12 @@
 #include <time.h>
 #include "common.h"
 
-struct food {
-    struct position position;
+typedef struct food {
+    position position;
     bool is_superfood;
     uint8_t reward;
     uint8_t size;
     time_t spawned_time;
-};
+} food;
 
 #endif //SCNAKE_FOOD_H
