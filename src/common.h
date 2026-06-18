@@ -9,28 +9,41 @@
 #define VIEWPORT_WIDTH 8
 #define VIEWPORT_HEIGHT 8
 
-struct position {
+typedef enum pixel_type{
+    BLANK,
+    SNAKE_BODY,
+    SNAKE_HEAD_UP,
+    SNAKE_HEAD_DOWN,
+    SNAKE_HEAD_LEFT,
+    SNAKE_HEAD_RIGHT,
+    FOOD,
+    BORDER
+} pixel_type;
+
+typedef struct position {
     uint8_t x_coordinate;
     uint8_t y_coordinate;
-};
+} position;
 
-struct dll_position {
-    struct position position;
+typedef struct dll_position {
+    position position;
     struct dll_position* prev;
     struct dll_position* next;
-};
+} dll_position;
 
-extern bool frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
-
-unsigned int get_random_number(const int min, const int max, const unsigned int seed);
+unsigned int get_random_number(int min, int max, unsigned int seed);
 
 void set_random_position(
-    const struct position* arr_permitted_coordinates,
+    const position* arr_permitted_coordinates,
     const uint8_t permitted_coordinates_arr_size,
-    const struct position* p_position);
+    position* p_position);
 
-void initialize_frame_buffer();
+extern pixel_type frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
 
-void set_frame(const struct dll_position* coordinates);
+void set_frame_buffer(const dll_position* coordinates);
+
+void flush_frame_buffer();
+
+void render_frame_buffer();
 
 #endif //SCNAKE_COMMON_H

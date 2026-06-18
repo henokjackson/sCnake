@@ -3,12 +3,50 @@
 //
 
 #include "common.h"
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 
-void initialize_frame_buffer() {
-    memset(frame_buffer, false, sizeof(frame_buffer));
+void flush_frame_buffer() {
+    memset(frame_buffer, BLANK, sizeof(frame_buffer));
+}
+
+void set_frame_buffer(const dll_position* coordinates) {
+    flush_frame_buffer();
+    for(dll_position* coordinate_iterator = coordinates;
+        coordinate_iterator != NULL;
+        coordinate_iterator = coordinate_iterator -> next) {
+        frame_buffer[coordinate_iterator -> position.x_coordinate][coordinate_iterator -> position.y_coordinate] = true;
+    }
+}
+
+void render_frame_buffer() {
+    wchar_t pixel = ' ';
+    for(int i = 0; i < VIEWPORT_HEIGHT; i++) {
+        for(int j = 0; j < VIEWPORT_WIDTH; j++) {
+            if (frame_buffer[i][j] == SNAKE_BODY) {
+                pixel = L'■';
+            }
+            if (frame_buffer[i][j] == SNAKE_HEAD_UP) {
+                pixel = L'▲';
+            }
+            if (frame_buffer[i][j] == SNAKE_HEAD_DOWN) {
+                pixel = L'▼';
+            }
+            if (frame_buffer[i][j] == SNAKE_HEAD_LEFT) {
+                pixel = L'◀';
+            }
+            if (frame_buffer[i][j] == SNAKE_HEAD_RIGHT) {
+                pixel = L'▶';
+            }
+            if (frame_buffer[i][j] == FOOD) {
+                pixel = L'●';
+            }
+            printf("%d ", frame_buffer[i][j]);
+        }
+    }
 }
 
 unsigned int get_random_number(const int min, const int max, const unsigned int seed) {
@@ -19,9 +57,9 @@ unsigned int get_random_number(const int min, const int max, const unsigned int 
 }
 
 void set_random_position(
-    const struct position* arr_permitted_coordinates,
+    const position* arr_permitted_coordinates,
     const uint8_t permitted_coordinates_arr_size,
-    struct position* p_position) {
+    position* p_position) {
     /**
      * INFO:
      *      While generating random coordinates there is a thing to consider. Generating a random coordinate by excluding some is
