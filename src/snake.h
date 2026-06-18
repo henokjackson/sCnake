@@ -7,21 +7,21 @@
 
 #include "common.h"
 
-enum direction {
+typedef enum direction {
     NONE,
     UP,
     DOWN,
     LEFT,
     RIGHT
-};
+} direction;
 
-struct snake {
+typedef struct snake {
     uint8_t size;
-    enum direction direction;
-    struct dll_position* head;
-    struct dll_position* tail;
-};
+    direction direction;
+    dll_position* head;
+    dll_position* tail;
+} snake;
 
-void set_random_direction(enum direction* direction);
+void set_random_direction(direction* snake_direction);
 
 #endif //SCNAKE_SNAKE_H

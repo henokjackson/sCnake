@@ -3,12 +3,12 @@
 #include "snake.h"
 #include <stdlib.h>
 
-void set_random_direction(enum direction* direction) {
-    const unsigned int random_number = get_random_number(1, sizeof(enum direction[0]), time(nullptr));
-    *direction = (enum direction)random_number;
+void set_random_direction(direction* snake_direction) {
+    const unsigned int random_number = get_random_number(1, sizeof(direction[0]), time(nullptr));
+    *snake_direction = (direction)random_number;
 }
 
-struct position* generate_permitted_coordinates(const uint8_t snake_size, const uint8_t food_size) {
+position* generate_permitted_coordinates(const uint8_t snake_size, const uint8_t food_size) {
     /**
      * INFO:
      *  There is one thing that I missed out. Since, initial size of the snake will be 2,
@@ -73,7 +73,7 @@ struct position* generate_permitted_coordinates(const uint8_t snake_size, const 
     /**
      * TODO: Don't forget to free this piece of shit !
      */
-    struct position* arr_permitted_coordinates = malloc((VIEWPORT_HEIGHT * VIEWPORT_WIDTH - snake_size - food_size) * sizeof(struct snake_cell));
+    position* arr_permitted_coordinates = malloc((VIEWPORT_HEIGHT * VIEWPORT_WIDTH - snake_size - food_size) * sizeof(dll_position));
 
     // Iterate the array and get a list of all the cells that are marked `false`.
     for (int i = 0; i < VIEWPORT_HEIGHT; i++) {
@@ -101,9 +101,9 @@ void exclude_border_coordinates(const enum direction direction) {
     }
 }
 
-struct dll_position* get_snake_coordinates_list(const struct snake* p_snake) {
-    auto snake_coordinates_list = (struct dll_position*)malloc(sizeof(struct dll_position) * p_snake -> size);
-    for(struct dll_position* snake_cell_iterator = p_snake -> head;
+dll_position* get_snake_coordinates_list(const snake* p_snake) {
+    auto snake_coordinates_list = (dll_position*)malloc(sizeof(dll_position) * p_snake -> size);
+    for(dll_position* snake_cell_iterator = p_snake -> head;
         snake_cell_iterator != nullptr;
         snake_cell_iterator = snake_cell_iterator -> next) {
         snake_coordinates_list -> position = snake_cell_iterator -> position;
@@ -114,10 +114,10 @@ struct dll_position* get_snake_coordinates_list(const struct snake* p_snake) {
     return snake_coordinates_list;
 }
 
-void initialize_snake_and_food(struct snake* p_snake, const struct food* p_food) {
+void initialize_snake_and_food(snake* p_snake, const food* p_food) {
 
     // initialize frame buffer
-    initialize_frame_buffer();
+    flush_frame_buffer();
 
     // initialize snake size.
     p_snake -> size = 0;
@@ -126,19 +126,19 @@ void initialize_snake_and_food(struct snake* p_snake, const struct food* p_food)
     const uint8_t food_size = p_food -> size;
 
     // initialize permitted coordinates
-    struct position* arr_permitted_coordinates = nullptr;
+    position* arr_permitted_coordinates = nullptr;
 
     // initialize snake coordinates list
-    struct dll_position* snake_coordinates_list = nullptr;
+    dll_position* snake_coordinates_list = nullptr;
 
     // create snake head.
-    p_snake -> head = (struct dll_position*)malloc(sizeof(struct dll_position));
+    p_snake -> head = (dll_position*)malloc(sizeof(dll_position));
     p_snake -> head -> prev = nullptr;
     p_snake -> head -> next = p_snake -> tail;
     p_snake -> size++;
 
     // create snake tail.
-    p_snake -> tail = (struct dll_position*)malloc(sizeof(struct dll_position));
+    p_snake -> tail = (dll_position*)malloc(sizeof(dll_position));
     p_snake -> tail -> prev = p_snake -> head;
     p_snake -> tail -> next = nullptr;
     p_snake -> size++;
@@ -157,7 +157,7 @@ void initialize_snake_and_food(struct snake* p_snake, const struct food* p_food)
     snake_coordinates_list = get_snake_coordinates_list(p_snake);
 
     // render snake head on frame buffer
-    set_frame();
+    set_frame(snake_coordinates_list);
 
     // Calculate the initial position for tail using direction.
     // First, exclude the border coordinates.
