@@ -2,27 +2,26 @@
 // Created by Henok Jackson on 06/06/26.
 //
 
-#include "common.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
+#include <time.h>
+#include "common.h"
 
 void flush_frame_buffer() {
     memset(frame_buffer, BLANK, sizeof(frame_buffer));
 }
 
-void set_frame_buffer(const dll_position* coordinates) {
+void set_frame_buffer(const dll_pixel* coordinates) {
     flush_frame_buffer();
-    for(dll_position* coordinate_iterator = coordinates;
+    for(dll_pixel* coordinate_iterator = coordinates;
         coordinate_iterator != NULL;
         coordinate_iterator = coordinate_iterator -> next) {
-        frame_buffer[coordinate_iterator -> position.x_coordinate][coordinate_iterator -> position.y_coordinate] = true;
+        frame_buffer[coordinate_iterator -> position.x_coordinate][coordinate_iterator -> position.y_coordinate] = coordinate_iterator -> type;
     }
 }
 
-void render_frame_buffer() {
+void render_frame() {
     wchar_t pixel = ' ';
     for(int i = 0; i < VIEWPORT_HEIGHT; i++) {
         for(int j = 0; j < VIEWPORT_WIDTH; j++) {
@@ -44,7 +43,7 @@ void render_frame_buffer() {
             if (frame_buffer[i][j] == FOOD) {
                 pixel = L'●';
             }
-            printf("%d ", frame_buffer[i][j]);
+            printf("%lc", pixel);
         }
     }
 }

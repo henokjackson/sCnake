@@ -6,30 +6,39 @@
 #define SCNAKE_COMMON_H
 
 #include <stdint.h>
+
 #define VIEWPORT_WIDTH 8
 #define VIEWPORT_HEIGHT 8
 
 typedef enum pixel_type{
     BLANK,
-    SNAKE_BODY,
+    BORDER,
+    FOOD,
     SNAKE_HEAD_UP,
     SNAKE_HEAD_DOWN,
     SNAKE_HEAD_LEFT,
     SNAKE_HEAD_RIGHT,
-    FOOD,
-    BORDER
+    SNAKE_BODY,
+    SNAKE_TAIL,
 } pixel_type;
+
 
 typedef struct position {
     uint8_t x_coordinate;
     uint8_t y_coordinate;
 } position;
 
-typedef struct dll_position {
+typedef struct pixel {
     position position;
-    struct dll_position* prev;
-    struct dll_position* next;
-} dll_position;
+    pixel_type type;
+} pixel;
+
+typedef struct dll_pixel {
+    position position;
+    pixel_type type;
+    struct dll_pixel* prev;
+    struct dll_pixel* next;
+} dll_pixel;
 
 unsigned int get_random_number(int min, int max, unsigned int seed);
 
@@ -40,10 +49,10 @@ void set_random_position(
 
 extern pixel_type frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
 
-void set_frame_buffer(const dll_position* coordinates);
+void set_frame_buffer(const dll_pixel* coordinates);
 
 void flush_frame_buffer();
 
-void render_frame_buffer();
+void render_frame();
 
 #endif //SCNAKE_COMMON_H

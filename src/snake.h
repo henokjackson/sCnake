@@ -18,10 +18,8 @@ typedef enum direction {
 typedef struct snake {
     uint8_t size;
     direction direction;
-    dll_position* head;
-    dll_position* tail;
+    dll_pixel* head;
+    dll_pixel* tail;
 } snake;
-
-void set_random_direction(direction* snake_direction);
 
 #endif //SCNAKE_SNAKE_H
