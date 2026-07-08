@@ -1,12 +1,11 @@
 //
 // Created by Henok Jackson on 06/06/26.
 //
-
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "common.h"
 
 void flush_frame_buffer() {
     memset(frame_buffer, BLANK, sizeof(frame_buffer));
