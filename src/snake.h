@@ -22,4 +22,8 @@ typedef struct snake {
     dll_pixel* tail;
 } snake;
 
+void initialize_food(food* p_food);
+
+int initialize_snake(snake* p_snake, const food* p_food);
+
 #endif //SCNAKE_SNAKE_H

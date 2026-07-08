@@ -1,7 +1,7 @@
-#include <stdlib.h>
 #include "common.h"
 #include "food.h"
 #include "snake.h"
+#include <stdlib.h>
 
 void set_random_direction(direction* snake_direction) {
     const unsigned int random_number = get_random_number(1, sizeof(direction[0]), time(nullptr));
@@ -25,19 +25,6 @@ position* generate_available_coordinates_list(const uint8_t snake_size, const ui
      *  Right -> Exclude all coordinates of leftmost column.
      *  Up    -> Exclude all coordinates of bottomest column.
      *  Down  -> Exclude all coordinates of uppermost column.
-     *
-     *  There could be a problem whose solutions solves the other problems too.
-     *
-     *  When the direction is already decided and the head is already decided, the tail can also be decided on
-     *  these two. So, the position of tail is a function of the head poistion and the initial direction.
-     *  tail position = f(head_position,direction).
-     *
-     *  The logic is pretty straightforward:
-     *
-     *  Left  -> Food Position = (x+1, y)
-     *  Right -> Food Position = (x-1, y)
-     *  Up    -> Food Position = (x, y-1)
-     *  Down  -> Food Position = (x, y+1)
      *
      *  There's yet one another important think that I absolutely missed !
      *  The loop below just makes a list of coordinates of the snake body ! - why do I even need that ??!!
@@ -88,7 +75,7 @@ position* generate_available_coordinates_list(const uint8_t snake_size, const ui
     return arr_available_coordinates;
 }
 
-void set_excluded_border_coordinates(const enum direction direction) {
+void set_border_coordinates(const enum direction direction) {
     for (int i = 0; i < VIEWPORT_HEIGHT; i++) {
         for (int j = 0; j < VIEWPORT_WIDTH; j++) {
             if ((direction == LEFT && j == 0) ||
@@ -121,19 +108,61 @@ dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
 
 void set_snake_head_pixel_type(const snake* p_snake) {
     switch (p_snake -> direction) {
-        case LEFT: p_snake -> head -> type = SNAKE_HEAD_LEFT; break;
-        case RIGHT: p_snake -> head -> type = SNAKE_HEAD_RIGHT; break;
-        case UP: p_snake -> head -> type = SNAKE_HEAD_UP; break;
-        case DOWN: p_snake -> head -> type = SNAKE_HEAD_DOWN; break;
-        default: break;
+        case LEFT:
+            p_snake -> head -> type = SNAKE_HEAD_LEFT;
+            break;
+        case RIGHT:
+            p_snake -> head -> type = SNAKE_HEAD_RIGHT;
+            break;
+        case UP:
+            p_snake -> head -> type = SNAKE_HEAD_UP;
+            break;
+        case DOWN:
+            p_snake -> head -> type = SNAKE_HEAD_DOWN;
+            break;
+        default:
+            break;
     }
 }
 
-void initialize_snake_and_food(snake* p_snake, const food* p_food) {
+void set_snake_tail_coordinate(const snake* p_snake) {
+    /**
+    * INFO:
+    *  When the direction is already decided and the head is already decided, the tail can also be decided on
+    *  these two. So, the position of tail is a function of the head position and the initial direction.
+    *  tail position = f(head_position,direction).
+    *
+    *  The logic is pretty straightforward:
+    *
+    *  Left  -> Food Position = (x+1, y)
+    *  Right -> Food Position = (x-1, y)
+    *  Up    -> Food Position = (x, y-1)
+    *  Down  -> Food Position = (x, y+1)
+    */
+    switch (p_snake -> direction) {
+        case UP:
+            p_snake -> tail -> position.y_coordinate -= 1;
+            break;
+        case DOWN:
+            p_snake -> tail -> position.y_coordinate += 1;
+            break;
+        case LEFT:
+            p_snake -> tail -> position.x_coordinate += 1;
+            break;
+        case RIGHT:
+            p_snake -> tail -> position.x_coordinate -= 1;
+            break;
+        default:
+            break;
+    }
+}
 
-    // initialize frame buffer
-    flush_frame_buffer();
+void initialize_food(food* p_food) {
+    const position* arr_available_coordinates = generate_available_coordinates_list(0, 0);
+    set_random_position(arr_available_coordinates, 1, &p_food -> position);
+}
 
+int initialize_snake(snake* p_snake, const food* p_food) {
     // initialize snake size.
     p_snake -> size = 0;
 
@@ -180,20 +209,30 @@ void initialize_snake_and_food(snake* p_snake, const food* p_food) {
     // set pixel_type for snake head based on direction.
     set_snake_head_pixel_type(p_snake);
 
-    // get list of coordinates of snake pixels.
+    // get list of coordinates of snake pixels that includes the head.
     snake_coordinates_list = get_snake_coordinates_list(p_snake);
 
-    // set the snake head on frame buffer.
+    // set the snake along with the head on frame buffer.
     set_frame_buffer(snake_coordinates_list);
 
     // Calculate the initial position for tail using direction.
     // First, exclude the border coordinates.
-    set_excluded_border_coordinates(p_snake -> direction);
+    set_border_coordinates(p_snake -> direction);
 
-    // Second, exclude the head coordinate.
     // Remove the pre-allocated coordinates list.
     free((void*)arr_available_coordinates);
+
+    // Second, exclude the head coordinate.
     arr_available_coordinates = generate_available_coordinates_list(p_snake -> size, food_size);
 
-    set_p_snake -> tail -> position
+    // set snake tail position
+    set_snake_tail_coordinate(p_snake);
+
+    // get list of coordinates of snake pixels that includes the head and tail.
+    snake_coordinates_list = get_snake_coordinates_list(p_snake);
+
+    // set the snake along with the head and tail on frame buffer.
+    set_frame_buffer(snake_coordinates_list);
+
+    return 0;
 }
