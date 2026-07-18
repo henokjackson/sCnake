@@ -49,7 +49,7 @@ void set_random_position(
 
 extern pixel_type frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
 
-void set_frame_buffer(const dll_pixel* coordinates);
+void set_frame_buffer(dll_pixel* const coordinates);
 
 void flush_frame_buffer();
 
