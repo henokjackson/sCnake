@@ -17,4 +17,6 @@ typedef struct food {
     time_t spawned_time;
 } food;
 
+void initialize_food(food* p_food);
+
 #endif //SCNAKE_FOOD_H

@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include "common.h"
+#include "food.h"
 #include "snake.h"
 
 int main(void) {
     /**
      * INFO: Normally, terminals open up in echo mode and we need to press ENTER key
-     * for the input to be accepted by thegetchar() function. The ideas is to turn off
+     * for the input to be accepted by the getchar() function. The ideas is to turn off
      * echo mode using functions from termios library and call getchar to detech keypress,
      */
 
