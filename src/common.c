@@ -1,17 +1,20 @@
 //
 // Created by Henok Jackson on 06/06/26.
 //
-#include "common.h"
+#include "../include/common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+// Global variables
+pixel_type frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
+
 void flush_frame_buffer() {
     memset(frame_buffer, BLANK, sizeof(frame_buffer));
 }
 
-void set_frame_buffer(const dll_pixel* coordinates) {
+void set_frame_buffer(dll_pixel* const coordinates) {
     if (coordinates == nullptr) {
         perror("Null pointer dereference !");
         exit(EXIT_FAILURE);
