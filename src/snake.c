@@ -1,6 +1,7 @@
 #include "common.h"
 #include "food.h"
 #include "snake.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 void set_random_direction(direction* snake_direction) {
@@ -8,7 +9,7 @@ void set_random_direction(direction* snake_direction) {
     *snake_direction = (direction)random_number;
 }
 
-position* generate_available_coordinates_list(const uint8_t snake_size, const uint8_t food_size) {
+void set_border_coordinates(const enum direction direction) {
     /**
      * INFO:
      *  There is one thing that I missed out. Since, initial size of the snake will be 2,
@@ -25,57 +26,7 @@ position* generate_available_coordinates_list(const uint8_t snake_size, const ui
      *  Right -> Exclude all coordinates of leftmost column.
      *  Up    -> Exclude all coordinates of bottomest column.
      *  Down  -> Exclude all coordinates of uppermost column.
-     *
-     *  There's yet one another important think that I absolutely missed !
-     *  The loop below just makes a list of coordinates of the snake body ! - why do I even need that ??!!
-     *  What I want is a list of available coordinates, coordinates that are not occupied by the snake body
-     *  or by the food or the ones that match the border condition depending on direction.
-     *
-     *  There are several approached poping up in my head !!
-     *
-     *  1. The first approach would be to iterate through each and every one coordinated in the plane and
-     *  for each coordinate, iterste through the snake identify the correct coordinated. But dawg !! that's
-     *  gonna have an huge time complexity, nearly O(n^2). I think there are better ways !
-     *
-     *  2. The second approach would be to use the first ever idea I had, that is to store a matrix of size
-     *  VIEWPORT_WIDTH x VIEWPORT_HEIGHT. Since arrays can be dynamically allocated, it is flexible and can be
-     *  used easioy for this purpose as the matrix will be a boolean array and the occupied coordinates will be
-     *  marked true. The only issue would be updating the matrix each time.
-     *  NOTE: The sad part here is that, there might not be a need for a linked list for representing a snake
-     *  at all. The array solution might solve the problem automatically. Sometimes even none of these might be
-     *  required, Just some clever bit shifting is all I need maybe !!
-     *
-     *  One way to tackle this is by thinking how the frames will be rendered. In order to render each frame,
-     *  I need to run a loop O(n^2) it's same as running a nxn sized array linearly..so flat / non-flat
-     *  doesn't really matter. If I'm using a linked list, for each coordinate in the array, I will have to
-     *  iterate the whole snake body. How about reversing it? How about iterating the snake and setting each
-     *  element in the array and then printing it. Okay great! so the frame render issue is solved and we need
-     *  to use the 2-D array either way.
-     *
-     *  From my research I found out that the best thing is either to use a static array which will be initialized
-     *  based on the viewport size based on commandline argument or terminal screen size.So let's consider
-     *  the array approach first !
      */
-
-    /**
-     * TODO: Don't forget to free this piece of shit !
-     */
-    position* arr_available_coordinates = malloc((VIEWPORT_HEIGHT * VIEWPORT_WIDTH - snake_size - food_size) * sizeof(position));
-
-    // Iterate the array and get a list of all the cells that are marked `false`.
-    for (int i = 0; i < VIEWPORT_HEIGHT; i++) {
-        for (int j = 0; j < VIEWPORT_WIDTH; j++, arr_available_coordinates++) {
-            if (frame_buffer[i][j] == BLANK) { /** TODO: add a null pointer check here ! */
-                arr_available_coordinates -> x_coordinate = j;
-                arr_available_coordinates -> y_coordinate = i;
-            }
-        }
-    }
-
-    return arr_available_coordinates;
-}
-
-void set_border_coordinates(const enum direction direction) {
     for (int i = 0; i < VIEWPORT_HEIGHT; i++) {
         for (int j = 0; j < VIEWPORT_WIDTH; j++) {
             if ((direction == LEFT && j == 0) ||
@@ -89,12 +40,21 @@ void set_border_coordinates(const enum direction direction) {
 }
 
 dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
-    /**
-     * The elements in the linked list are stored in order. The first element is the head and tail is the
-     * element in the list.
-     */
+    if (p_snake == nullptr) {
+        perror("Possible null pointer dereference !");
+        exit(EXIT_FAILURE);
+    }
 
+    /**
+     * The elements in the linked list are stored in order.
+     * The first element is the head and tail is the element in the list.
+     */
     auto snake_coordinates_list = (dll_pixel*)malloc(sizeof(dll_pixel) * p_snake -> size);
+    if (snake_coordinates_list == nullptr) {
+        perror("Heap memory full !");
+        exit(EXIT_FAILURE);
+    }
+
     for(dll_pixel* snake_cell_iterator = p_snake -> head;
         snake_cell_iterator != nullptr;
         snake_cell_iterator = snake_cell_iterator -> next) {
@@ -102,11 +62,15 @@ dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
         snake_coordinates_list = snake_coordinates_list -> next;
         snake_cell_iterator = snake_cell_iterator -> next;
     }
-
     return snake_coordinates_list;
 }
 
 void set_snake_head_pixel_type(const snake* p_snake) {
+    if (p_snake == nullptr || p_snake -> head == nullptr) {
+        perror("Possible null pointer dereference !");
+        exit(EXIT_FAILURE);
+    }
+
     switch (p_snake -> direction) {
         case LEFT:
             p_snake -> head -> type = SNAKE_HEAD_LEFT;
@@ -126,6 +90,10 @@ void set_snake_head_pixel_type(const snake* p_snake) {
 }
 
 void set_snake_tail_coordinate(const snake* p_snake) {
+    if (p_snake == nullptr || p_snake -> tail == nullptr) {
+        perror("Possible null pointer dereference !");
+        exit(EXIT_FAILURE);
+    }
     /**
     * INFO:
     *  When the direction is already decided and the head is already decided, the tail can also be decided on
@@ -157,12 +125,12 @@ void set_snake_tail_coordinate(const snake* p_snake) {
     }
 }
 
-void initialize_food(food* p_food) {
-    const position* arr_available_coordinates = generate_available_coordinates_list(0, 0);
-    set_random_position(arr_available_coordinates, 1, &p_food -> position);
-}
-
 int initialize_snake(snake* p_snake, const food* p_food) {
+    if (p_snake == nullptr || p_food == nullptr) {
+        perror("Possible null pointer dereference !");
+        exit(EXIT_FAILURE);
+    }
+
     // initialize snake size.
     p_snake -> size = 0;
 
@@ -176,14 +144,24 @@ int initialize_snake(snake* p_snake, const food* p_food) {
     dll_pixel* snake_coordinates_list = nullptr;
 
     /**
-     * TODO: Write a factory function that malloc()s the memory for snake and also
-     *       increments the size along with it to avoid mistakes.
+     * TODO:
+     *  Write a factory function that malloc()s the memory for snake and also
+     *  increments the size along with it to avoid mistakes.
      */
+
     // create snake head.
     p_snake -> head = (dll_pixel*)malloc(sizeof(dll_pixel));
+    if (p_snake -> head == nullptr) {
+        perror("Heap memory full !");
+        exit(EXIT_FAILURE);
+    }
 
     // create snake tail.
     p_snake -> tail = (dll_pixel*)malloc(sizeof(dll_pixel));
+    if (p_snake -> tail == nullptr) {
+        perror("Heap memory full !");
+        exit(EXIT_FAILURE);
+    }
 
     // set snake head parameters.
     p_snake -> head -> prev = nullptr;
@@ -223,6 +201,9 @@ int initialize_snake(snake* p_snake, const food* p_food) {
     free((void*)arr_available_coordinates);
 
     // Second, exclude the head coordinate.
+    // in order to remove this function call, It needs to be guaranteed that the previous
+    // functions will position the snake head in such a way that the tail can be positioned
+    // in any of the surrounding cross pixels
     arr_available_coordinates = generate_available_coordinates_list(p_snake -> size, food_size);
 
     // set snake tail position
