@@ -55,4 +55,6 @@ void flush_frame_buffer();
 
 void render_frame();
 
+position* generate_available_coordinates_list(const uint8_t snake_size, const uint8_t food_size);
+
 #endif //SCNAKE_COMMON_H
