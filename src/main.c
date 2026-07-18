@@ -3,7 +3,7 @@
 #include "food.h"
 #include "snake.h"
 
-int main(void) {
+int main(int argc, char** argv) {
     /**
      * INFO: Normally, terminals open up in echo mode and we need to press ENTER key
      * for the input to be accepted by the getchar() function. The ideas is to turn off
@@ -14,10 +14,10 @@ int main(void) {
     flush_frame_buffer();
 
     // initialize food
-    initialize_food();
+    initialize_food(nullptr);
 
     // initialize snake
-    initialize_snake();
+    initialize_snake(nullptr, nullptr);
 
     // render frame
     render_frame();
