@@ -1,15 +1,15 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "common.h"
 #include "food.h"
 #include "snake.h"
-#include <stdio.h>
-#include <stdlib.h>
 
-void set_random_direction(direction* snake_direction) {
+static void set_random_direction(direction* snake_direction) {
     const unsigned int random_number = get_random_number(1, sizeof(direction[0]), time(nullptr));
     *snake_direction = (direction)random_number;
 }
 
-void set_border_coordinates(const enum direction direction) {
+static void set_border_coordinates(const enum direction direction) {
     /**
      * INFO:
      *  There is one thing that I missed out. Since, initial size of the snake will be 2,
@@ -39,7 +39,7 @@ void set_border_coordinates(const enum direction direction) {
     }
 }
 
-dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
+static dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
     if (p_snake == nullptr) {
         perror("Possible null pointer dereference !");
         exit(EXIT_FAILURE);
@@ -65,7 +65,7 @@ dll_pixel* get_snake_coordinates_list(const snake* p_snake) {
     return snake_coordinates_list;
 }
 
-void set_snake_head_pixel_type(const snake* p_snake) {
+static void set_snake_head_pixel_type(const snake* p_snake) {
     if (p_snake == nullptr || p_snake -> head == nullptr) {
         perror("Possible null pointer dereference !");
         exit(EXIT_FAILURE);
@@ -89,7 +89,7 @@ void set_snake_head_pixel_type(const snake* p_snake) {
     }
 }
 
-void set_snake_tail_coordinate(const snake* p_snake) {
+static void set_snake_tail_coordinate(const snake* p_snake) {
     if (p_snake == nullptr || p_snake -> tail == nullptr) {
         perror("Possible null pointer dereference !");
         exit(EXIT_FAILURE);
@@ -125,6 +125,32 @@ void set_snake_tail_coordinate(const snake* p_snake) {
     }
 }
 
+/**
+ * TODO:
+ *  Write a factory function that malloc()s the memory for snake and also
+ *  increments the size along with it to avoid mistakes.
+ */
+static dll_pixel* create_snake_body_cell(uint8_t* snake_size) {
+    dll_pixel* snake_body_cell = (dll_pixel*)malloc(sizeof(dll_pixel));
+    if (snake_body_cell == nullptr) {
+        perror("Heap memory full !");
+        exit(EXIT_FAILURE);
+    }
+    (*snake_size)++;
+    return snake_body_cell;
+}
+static void create_snake_head(snake* p_snake) {
+    p_snake -> head = create_snake_body_cell(&p_snake -> size);
+    p_snake -> head -> prev = nullptr;
+    p_snake -> head -> next = p_snake -> tail;
+}
+static void create_snake_tail(snake* p_snake) {
+    p_snake -> tail = create_snake_body_cell(&p_snake -> size);
+    p_snake -> tail -> prev = p_snake -> head;
+    p_snake -> tail -> next = nullptr;
+    p_snake -> tail -> type = SNAKE_TAIL;
+}
+
 int initialize_snake(snake* p_snake, const food* p_food) {
     if (p_snake == nullptr || p_food == nullptr) {
         perror("Possible null pointer dereference !");
@@ -143,36 +169,11 @@ int initialize_snake(snake* p_snake, const food* p_food) {
     // initialize snake coordinates list.
     dll_pixel* snake_coordinates_list = nullptr;
 
-    /**
-     * TODO:
-     *  Write a factory function that malloc()s the memory for snake and also
-     *  increments the size along with it to avoid mistakes.
-     */
-
     // create snake head.
-    p_snake -> head = (dll_pixel*)malloc(sizeof(dll_pixel));
-    if (p_snake -> head == nullptr) {
-        perror("Heap memory full !");
-        exit(EXIT_FAILURE);
-    }
+    create_snake_head(p_snake);
 
     // create snake tail.
-    p_snake -> tail = (dll_pixel*)malloc(sizeof(dll_pixel));
-    if (p_snake -> tail == nullptr) {
-        perror("Heap memory full !");
-        exit(EXIT_FAILURE);
-    }
-
-    // set snake head parameters.
-    p_snake -> head -> prev = nullptr;
-    p_snake -> head -> next = p_snake -> tail;
-    p_snake -> size++;
-
-    // set snake tail parameters.
-    p_snake -> tail -> prev = p_snake -> head;
-    p_snake -> tail -> next = nullptr;
-    p_snake -> tail -> type = SNAKE_TAIL;
-    p_snake -> size++;
+    create_snake_tail(p_snake);
 
     // Calculate the initial position for snake head.
     // generate list of available co-ordinates

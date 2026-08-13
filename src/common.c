@@ -1,11 +1,11 @@
 //
 // Created by Henok Jackson on 06/06/26.
 //
-#include "../include/common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "../include/common.h"
 
 // Global variables
 pixel_type frame_buffer[VIEWPORT_HEIGHT][VIEWPORT_WIDTH];
